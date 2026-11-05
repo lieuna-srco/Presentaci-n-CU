@@ -91,6 +91,14 @@ h1 em,h2 em{font-style:italic;color:var(--acento)}
 .huecos li b{display:block;color:var(--fg);font-weight:400;font-size:18px;line-height:1.3}
 .huecos li .cod{display:block;font-size:12px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--acento);margin-bottom:4px}
 .huecos li[data-forma]::before{display:none}
+.avance{gap:10px}
+.avance li b{font-size:17px}
+.avance li.listo{border-left-color:var(--rojo)}
+.avance li.listo .cod::before{content:"✓ "}
+.avance li.proceso{border-left:1px dashed var(--azul-m)}
+.avance li.proceso .cod{color:var(--azul-m)}
+.avance li.siguiente .cod{color:var(--fg2)}
+.avance li.siguiente .cod::before{content:"→ "}
 .huecos li.foco{border-left-color:var(--rojo);color:var(--fg2)}
 
 .pie{pointer-events:auto}
@@ -249,12 +257,14 @@ button:focus-visible{outline:2px solid var(--acento);outline-offset:3px;border-r
     <section class="diapo" data-formas="rotulo" aria-label="Nueva sede en Grecia">
       <div class="ceja">Proyecto</div>
       <h2>Nuevo <em>Campus Grecia</em></h2>
-      <span class="pendiente">Dato pendiente · no está en el .ods</span>
-      <ul class="huecos">
-        <li><b>Ubicación y terreno</b>Dirección, área, estado legal</li>
-        <li><b>Etapas y fechas</b>Diseño, construcción, apertura estimada</li>
-        <li><b>Oferta prevista</b>Carreras y cupos proyectados</li>
+      <ul class="huecos avance">
+        <li class="listo"><span class="cod">Listo</span><b>Convenio firmado</b></li>
+        <li class="listo"><span class="cod">Listo</span><b>Requerimientos espaciales definidos</b></li>
+        <li class="listo"><span class="cod">Listo</span><b>Costo de mantenimiento y vigilancia enviado a Presupuestos</b>Trámite de la Vicerrectoría de Administración</li>
+        <li class="proceso"><span class="cod">En proceso</span><b>Matriz de equipos</b></li>
+        <li class="siguiente"><span class="cod">Próximo paso</span><b>Visita al ingeniero electromecánico de PRODEMI</b></li>
       </ul>
+      <p class="cuerpo">Trabajamos de la mano con la arquitecta <strong>Andrea Coto Martínez</strong>, quien lleva todo el proceso de construcción del Campus Grecia.</p>
     </section>
   </main>
 
@@ -659,29 +669,14 @@ button:focus-visible{outline:2px solid var(--acento);outline-offset:3px;border-r
       return { pts: o, pitch: 0.3, giro: 'completo', escala: 1.0 };
     },
     rotulo(n) {
+      // Solo el rótulo: letras UNA sobre el pedestal con CAMPUS GRECIA
       const o = [];
-      // campus de fondo: edificio de dos pisos con ventanales y alero
-      const bz = 1.05, by = -0.8;
-      box(o, 0.1, by, bz, 3.3, 0.7, 0.5, n * 0.07, () => pick([4, 5]), 0.95, 0.4);
-      [-0.12, 0.12].forEach(dy => line(o, [-1.55, by + dy, bz - 0.25], [1.75, by + dy, bz - 0.25], n * 0.022, 4, 0.006, 0.45));
-      for (let k = 0; k < 15; k++) { const x = -1.45 + k * 0.22; line(o, [x, by - 0.33, bz - 0.25], [x, by + 0.33, bz - 0.25], n * 0.005, 5, 0.004, 0.35); }
-      box(o, 0.1, by - 0.38, bz, 3.4, 0.05, 0.62, n * 0.022, 4, 0.9, 0.45);
-      // palmeras
-      const palma = (x, z, h) => {
-        line(o, [x, 0.62, z], [x + 0.06, 0.62 - h, z], n * 0.014, 5, 0.008, 0.6);
-        for (let f = 0; f < 7; f++) { const a = f * TAU / 7; for (let i = 0; i < n * 0.005; i++) { const t = Math.random(); o.push(P(x + 0.06 + Math.cos(a) * 0.3 * t, 0.62 - h - 0.12 * Math.sin(t * Math.PI * 0.8) + 0.16 * t * t, z + Math.sin(a) * 0.3 * t, pick([6, 7, 4]), 0.6)); } }
-      };
-      palma(-1.5, 0.55, 1.35); palma(-1.2, 0.95, 1.1); palma(1.35, 0.9, 1.15);
-      // letras UNA
-      textoExtruido(o, 'UNA', '400 230px "Sorts Mill Goudy", "Goudy Old Style", Georgia, serif', 720, 260, 2.0, n * 0.33, RJ, { y0: -0.42, prof: 0.045 });
-      // pedestal y texto
-      box(o, 0, 0.33, 0, 2.1, 0.5, 0.42, n * 0.08, () => pick([5, 5, 4]), 0.9, 0.7);
+      textoExtruido(o, 'UNA', '400 230px "Sorts Mill Goudy", "Goudy Old Style", Georgia, serif', 720, 260, 2.0, n * 0.48, RJ, { y0: -0.42, prof: 0.045 });
+      box(o, 0, 0.33, 0, 2.1, 0.5, 0.42, n * 0.12, () => pick([5, 5, 4]), 0.9, 0.75);
       const m = muestrasTexto('CAMPUS GRECIA', '700 120px Yantramanav, Arial, sans-serif', 1000, 160);
-      for (let i = 0; i < n * 0.27 && m.length; i++) { const [u, v] = pick(m); o.push(P(u * 1.95, 0.33 + v * 1.95, -0.215, 3, 1)); }
-      // marco rojo detrás de la "A"
-      poly(o, [[0.5, 0.08, 0.32], [0.5, -1.15, 0.32], [1.25, -1.15, 0.32], [1.25, 0.08, 0.32]], n * 0.06, () => pick([0, 2]), 0.012, 0.85);
-      xf(o, { s: 0.68, ty: 0.12, tx: -0.22 });
-      return { pts: o, pitch: 0.1, giro: 'vaiven', yaw: -0.2, amplitud: 0.3, escala: 1.12 };
+      for (let i = 0; i < n * 0.38 && m.length; i++) { const [u, v] = pick(m); o.push(P(u * 1.95, 0.33 + v * 1.95, -0.215, 3, 1)); }
+      xf(o, { s: 0.92, ty: 0.06 });
+      return { pts: o, pitch: 0.1, giro: 'vaiven', yaw: -0.2, amplitud: 0.3, escala: 1.05 };
     }
   };
 
