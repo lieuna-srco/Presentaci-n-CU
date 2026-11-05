@@ -741,10 +741,10 @@ button:focus-visible{outline:2px solid var(--acento);outline-offset:3px;border-r
   let ondaInicio = -1e9, ultDestello = 0, ultOnda = 0;
   function juego(t) {
     if (reduce) return;
-    if (t - ultOnda > 9500) { ondaInicio = t; ultOnda = t; }
-    if (t - ultDestello > 3200) {
+    if (t - ultOnda > 28000) { ondaInicio = t; ultOnda = t; }
+    if (t - ultDestello > 14000) {
       ultDestello = t;
-      for (let i = 0; i < N * 0.06; i++) { const p = pick(parts); p.vx += rnd(-0.08, 0.08); p.vy += rnd(-0.08, 0.08); p.vz += rnd(-0.08, 0.08); p.delay = Math.floor(rnd(5, 25)); }
+      for (let i = 0; i < N * 0.025; i++) { const p = pick(parts); p.vx += rnd(-0.04, 0.04); p.vy += rnd(-0.04, 0.04); p.vz += rnd(-0.04, 0.04); p.delay = Math.floor(rnd(5, 25)); }
     }
   }
 
@@ -761,7 +761,7 @@ button:focus-visible{outline:2px solid var(--acento);outline-offset:3px;border-r
     const deriva = reduce ? 0 : 1;
     const cx = W * cam.cx + Math.sin(t * 0.00021) * W * 0.022 * deriva;
     const cy = H * cam.cy + Math.cos(t * 0.00017) * H * 0.03 * deriva;
-    const resp = 1 + (reduce ? 0 : Math.sin(t * 0.0009) * 0.025);
+    const resp = 1 + (reduce ? 0 : Math.sin(t * 0.0004) * 0.008);
     const escObj = forma ? forma.escala : 1;
     cam.escala += (escObj - cam.escala) * 0.04;
     const R = (movil ? Math.min(W * 0.4, H * 0.2) : Math.min(W * 0.23, H * 0.33)) * cam.escala * resp;
@@ -801,7 +801,7 @@ button:focus-visible{outline:2px solid var(--acento);outline-offset:3px;border-r
         const dx = X - ccx, dy = Y - ccy; X = ccx + dx * ca - dy * sa; Y = ccy + dx * sa + dy * ca;
       }
       if (p.f && !reduce) { X += rnd(-0.025, 0.025); Y += rnd(-0.03, 0.03); }
-      if (ondaE > 0 && !p.amb) Y += Math.sin(X * 3.5 + Z * 2 - (t - ondaInicio) * 0.006) * 0.08 * ondaE;
+      if (ondaE > 0 && !p.amb) Y += Math.sin(X * 3.5 + Z * 2 - (t - ondaInicio) * 0.006) * 0.045 * ondaE;
 
       const x1 = X * cyw - Z * syw, z1 = X * syw + Z * cyw;
       const y2 = Y * cp - z1 * sp, z2 = Y * sp + z1 * cp;
@@ -830,7 +830,7 @@ button:focus-visible{outline:2px solid var(--acento);outline-offset:3px;border-r
   }
 
   // ---------- Variantes por diapositiva ----------
-  let actual = -1, variante = 0, pausaHasta = 0, ultCambio = 0;
+  let actual = -1, variante = 0, pausaHasta = 0, ultCambio = 0, esperaHover = null;
   const formasDe = i => slides[i].dataset.formas.split(',');
   function marcarFoco(nombre) {
     slides[actual].querySelectorAll('[data-forma]').forEach(el => el.classList.toggle('foco', el.dataset.forma === nombre));
@@ -846,19 +846,25 @@ button:focus-visible{outline:2px solid var(--acento);outline-offset:3px;border-r
     if (actual < 0) return;
     const lista = formasDe(actual);
     if (lista.length < 2 || performance.now() < pausaHasta) return;
-    if (performance.now() - ultCambio < 5000) return;
+    if (performance.now() - ultCambio < 9000) return;
     verVariante(variante + 1);
   }, 400);
   slides.forEach(s => s.querySelectorAll('[data-forma]').forEach(el => {
-    const activar = () => {
+    // Cambia solo si el cursor se queda sobre el ítem y respeta un tiempo mínimo entre figuras
+    const activarYa = () => {
       const lista = formasDe(actual), idx = lista.indexOf(el.dataset.forma);
       pausaHasta = performance.now() + 1e9;
-      if (idx >= 0 && idx !== variante) verVariante(idx, 0.45);
+      if (idx < 0 || idx === variante) return;
+      const falta = 1800 - (performance.now() - ultCambio);
+      clearTimeout(esperaHover);
+      if (falta > 0) esperaHover = setTimeout(activarYa, falta);
+      else verVariante(idx, 0.45);
     };
-    const soltar = () => { pausaHasta = performance.now() + 4000; };
-    el.addEventListener('mouseenter', activar); el.addEventListener('focus', activar);
+    const entrar = () => { clearTimeout(esperaHover); esperaHover = setTimeout(activarYa, 600); };
+    const soltar = () => { clearTimeout(esperaHover); pausaHasta = performance.now() + 6000; };
+    el.addEventListener('mouseenter', entrar); el.addEventListener('focus', entrar);
     el.addEventListener('mouseleave', soltar); el.addEventListener('blur', soltar);
-    el.addEventListener('click', activar);
+    el.addEventListener('click', () => { clearTimeout(esperaHover); activarYa(); });
   }));
 
   // ---------- Navegación ----------
